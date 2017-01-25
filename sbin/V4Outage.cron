@@ -1,0 +1,19 @@
+#!/bin/sh
+#These are only needed if running cache.outage.oracle.pl
+#ORACLE_HOME=/soft/oracle-client-11.1
+#LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
+
+#/soft/info/bin/cache.outage.pl --cache=/soft/info/cache/V4OutageRP
+/soft/warehouse-1.0/PROD/apps/RouteOutages/cache.outage.pl --cache=/soft/warehouse-1.0/PROD/apps/RouteOutages
+
+#CACHE=/soft/info/cache/V4OutageRP/
+CACHE=/soft/warehouse-1.0/PROD/apps/RouteOutages/
+DATE=`date +%Y-%m-%dT%H:%M:%SZ`
+#LOG=/soft/info/logs/outages.log
+LOG=/soft/warehouse-1.0/PROD/apps/RouteOutages/outages.log
+
+cd $CACHE
+for f in $(shopt -s nullglob; echo *.xml) ;do
+   SIZE=$(stat -c '%s' $f)
+   printf "%20s, %7d, %s\n" $DATE $SIZE $f >>$LOG
+done

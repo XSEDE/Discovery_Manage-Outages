@@ -1,0 +1,9 @@
+import django
+django.setup()
+from django.utils.dateparse import parse_datetime
+from django.core import serializers
+from outages.models import *
+
+data = serializers.serialize("json", outages.objects.all())
+print data
+
