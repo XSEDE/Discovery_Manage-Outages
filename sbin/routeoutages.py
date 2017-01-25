@@ -24,8 +24,7 @@ from django.utils.dateparse import parse_datetime
 from outages.models import *
 from django.core import serializers
 
-#default_file = '/Users/blau/endpoint_descriptions/trunk/apps/RouteOutages/outages.csv'
-default_file = '/soft/warehouse-1.0/PROD/apps/RouteOutages/allOutageReport.csv'
+default_file = '/soft/warehouse-apps-1.0/Manage-Outages/var/allOutageReport.csv'
 #snarfing the whole database is not the way to do it, for this anyway)
 #databasestate = serializers.serialize("json", ProjectResource.objects.all())
 with open(default_file, 'r') as my_file:
