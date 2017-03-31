@@ -23,24 +23,54 @@ django.setup()
 from django.utils.dateparse import parse_datetime
 from outages.models import *
 from django.core import serializers
+from processing_status.process import ProcessingActivity
 
-default_file = '/soft/warehouse-apps-1.0/Manage-Outages/var/allOutageReport.csv'
+#default_file = '/soft/warehouse-apps-1.0/Manage-Outages/var/allOutageReport.csv'
+default_file = './allOutageReport.csv'
 #snarfing the whole database is not the way to do it, for this anyway)
-#databasestate = serializers.serialize("json", ProjectResource.objects.all())
+databasestate = serializers.serialize("json", Outages.objects.all())
+#print databasestate
+dbstate = json.loads(databasestate)
+#print dbstate
+dbhash = {}
+for obj in dbstate:
+    #print obj
+    dbhash[str(obj['pk'])]=obj
+#print dbhash
 with open(default_file, 'r') as my_file:
     tgcdb_csv = csv.DictReader(my_file)
     for row in tgcdb_csv:
     #    if len(row['Content'])>1023:
     #        print len(row['Content'])
         #InDBAlready = ProjectResource.objects.filter(**row)
-        InDBAlready = Outages.objects.filter(OutageID=row['OutageID'])
-        if not InDBAlready:
-            objtoserialize={}
-            objtoserialize["model"]="outages.Outages"
-            objtoserialize["pk"]=row['OutageID']
-            objtoserialize["fields"]=row
-            jsonobj = json.dumps([objtoserialize])
-            moduleobjects =serializers.deserialize("json", jsonobj)
+        #InDBAlready = Outages.objects.filter(OutageID=row['OutageID'])
+        #if not InDBAlready:
+        #print row['OutageID']
+        #print dbhash
+        #print dbhash[row['OutageID']]
+        #hash is just tracking what we've seen, we do the same thing for updates or not
+        if row['OutageID']+":"+row['ResourceID'] in dbhash.keys():
+            dbhash.pop(row['OutageID']+":"+row['ResourceID'])
+        #    print "%s found in database already" % row['OutageID']
+        #else:
+        objtoserialize={}
+        objtoserialize["model"]="outages.Outages"
+        objtoserialize["pk"]=row['OutageID']+":"+row['ResourceID']
+        objtoserialize["fields"]=row
+        jsonobj = json.dumps([objtoserialize])
+        moduleobjects =serializers.deserialize("json", jsonobj)
 
-            for obj in moduleobjects:
-                obj.save()
+        for obj in moduleobjects:
+            obj.save()
+                
+            pa_application=os.path.basename(__file__)
+            pa_function='Warehouse_Outages'
+            pa_id = objtoserialize["pk"]
+            pa_topic = 'Outages'
+            pa_about = 'project_affiliation=XSEDE'
+            pa = ProcessingActivity(pa_application, pa_function, pa_id , pa_topic, pa_about)
+
+    #print dbhash.keys()
+    for key in dbhash.keys():
+        #print "key %s not in this update" % key
+        Outages.objects.filter(ID=key).delete()
