@@ -50,10 +50,10 @@ with open(default_file, 'r') as my_file:
     tgcdb_csv = csv.DictReader(my_file)
     #Start ProcessActivity
     pa_application=os.path.basename(__file__)
-    pa_function='Warehouse_Outages'
+    pa_function='main'
     pa_topic = 'Outages'
-    pa_id = pa_topic+":"+str(datetime.now(utc))
-    pa_about = 'project_affiliation=XSEDE'
+    pa_id = pa_topic
+    pa_about = 'xsede.org'
     pa = ProcessingActivity(pa_application, pa_function, pa_id , pa_topic, pa_about)
     for row in tgcdb_csv:
     #    if len(row['Content'])>1023:
