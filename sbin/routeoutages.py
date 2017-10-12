@@ -25,15 +25,6 @@ from outages.models import *
 from django.core import serializers
 from processing_status.process import ProcessingActivity
 
-class UTC(tzinfo):
-    def utcoffset(self, dt):
-        return timedelta(0)
-    def tzname(self, dt):
-        return 'UTC'
-    def dst(self, dt):
-        return timedelta(0)
-utc = UTC()
-
 #default_file = '/soft/warehouse-apps-1.0/Manage-Outages/var/allOutageReport.csv'
 default_file = './allOutageReport.csv'
 #snarfing the whole database is not the way to do it, for this anyway)
@@ -48,13 +39,6 @@ for obj in dbstate:
 #print dbhash
 with open(default_file, 'r') as my_file:
     tgcdb_csv = csv.DictReader(my_file)
-    #Start ProcessActivity
-    pa_application=os.path.basename(__file__)
-    pa_function='main'
-    pa_topic = 'Outages'
-    pa_id = pa_topic
-    pa_about = 'xsede.org'
-    pa = ProcessingActivity(pa_application, pa_function, pa_id , pa_topic, pa_about)
     for row in tgcdb_csv:
     #    if len(row['Content'])>1023:
     #        print len(row['Content'])
@@ -79,8 +63,14 @@ with open(default_file, 'r') as my_file:
         for obj in moduleobjects:
             obj.save()
                 
+            pa_application=os.path.basename(__file__)
+            pa_function='Warehouse_Outages'
+            pa_id = objtoserialize["pk"]
+            pa_topic = 'Outages'
+            pa_about = 'project_affiliation=XSEDE'
+            pa = ProcessingActivity(pa_application, pa_function, pa_id , pa_topic, pa_about)
+
     #print dbhash.keys()
     for key in dbhash.keys():
         #print "key %s not in this update" % key
         Outages.objects.filter(ID=key).delete()
-    pa.FinishActivity(0, "")
