@@ -1,0 +1,1 @@
+1,16,31,46 * * * * /bin/bash -l -c "/soft/warehouse-apps-1.0/Manage-Outages/PROD/sbin/V4Outage.cron"
