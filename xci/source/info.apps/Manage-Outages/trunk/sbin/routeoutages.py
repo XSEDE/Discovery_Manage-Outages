@@ -12,7 +12,10 @@ import signal
 import datetime
 from datetime import datetime, tzinfo, timedelta
 from time import sleep
-import httplib
+try:
+    import http.client as httplib
+except ImportError:
+    import httplib
 import json
 import csv
 import ssl
