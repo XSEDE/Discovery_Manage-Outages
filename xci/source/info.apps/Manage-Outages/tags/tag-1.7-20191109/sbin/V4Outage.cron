@@ -1,0 +1,22 @@
+#!/bin/sh
+#These are only needed if running cache.outage.oracle.pl
+#ORACLE_HOME=/soft/oracle-client-11.1
+#LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
+
+#/soft/info/bin/cache.outage.pl --cache=/soft/info/cache/V4OutageRP
+#/soft/warehouse-1.0/PROD/apps/RouteOutages/cache.outage.pl --cache=/soft/warehouse-1.0/PROD/apps/RouteOutages
+LOCATION=/soft/warehouse-apps-1.0/Manage-Outages/
+PRODLOC=$LOCATION/PROD/
+CACHE=$LOCATION/var
+$PRODLOC/sbin/cache.outage.pl --cache=$CACHE
+
+DATE=`date +%Y-%m-%dT%H:%M:%SZ`
+#LOG=/soft/info/logs/outages.log
+LOG=$CACHE/outages.log
+
+cd $CACHE
+for f in $(shopt -s nullglob; echo *.csv) ;do
+   SIZE=$(stat -c '%s' $f)
+   printf "%20s, %7d, %s\n" $DATE $SIZE $f >>$LOG
+done
+$PRODLOC/sbin/route_outages.sh
