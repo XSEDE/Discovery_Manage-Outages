@@ -14,4 +14,4 @@ export PYTHONPATH=${WAREHOUSE_ROOT}/django_xsede_warehouse
 export DJANGO_CONF=/soft/warehouse-apps-1.0/Manage-Outages/conf/django_xsede_warehouse.conf
 export DJANGO_SETTINGS_MODULE=xsede_warehouse.settings
 
-python ${MY_ROOT}/sbin/routeoutages.py
+python ${MY_ROOT}/sbin/route_outages.py
