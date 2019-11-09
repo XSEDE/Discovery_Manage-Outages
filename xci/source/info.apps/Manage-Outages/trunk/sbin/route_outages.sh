@@ -2,7 +2,7 @@
 MY_ROOT=/soft/warehouse-apps-1.0/Manage-Outages/PROD
 WAREHOUSE_ROOT=/soft/warehouse-1.0/PROD
 
-PYTHON_BASE=/soft/python/python-3.6.6-base
+PYTHON_BASE=/soft/python/python-3.7.5-base
 export LD_LIBRARY_PATH=${PYTHON_BASE}/lib
 
 PYTHON_ROOT=/soft/warehouse-apps-1.0/Manage-Outages/python
