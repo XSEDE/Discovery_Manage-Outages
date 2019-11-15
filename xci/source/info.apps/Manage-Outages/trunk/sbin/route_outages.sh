@@ -9,10 +9,12 @@ export LD_LIBRARY_PATH=${PYTHON_BASE}/lib
 PIPENV_BASE=${APP_BASE}/python
 source ${PIPENV_BASE}/bin/activate
 
+PYTHON_BIN=python3
+
 #export DJANGO_CONF=/Users/blau/info_services/info.warehouse/trunk/django_xsede_warehouse/xsede_warehouse/settings_localdev.conf
 #export PYTHONPATH=/Users/blau/info_services/info.warehouse/trunk/apps:/Users/blau/info_services/info.warehouse/trunk/django_xsede_warehouse
 export PYTHONPATH=${WAREHOUSE_SOURCE}/django_xsede_warehouse
 export DJANGO_CONF=${APP_BASE}/conf/django_xsede_warehouse.conf
 export DJANGO_SETTINGS_MODULE=xsede_warehouse.settings
 
-${PIPENV_BASE}/bin/python ${APP_SOURCE}/sbin/route_outages.py
+${PYTHON_BIN} ${APP_SOURCE}/sbin/route_outages.py
