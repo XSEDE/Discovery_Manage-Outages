@@ -18,7 +18,7 @@ my $DBPASS = '8wASpHTC';
 # URL to see info on the web
 #my $NewsBaseURL = 'http://xsede-news.sdsc.edu/view-item.php?item=';
 # Replaced above on 5/8/2012, JP
-my $NewsBaseURL = 'https://www.xsede.org/news/-/news/item/';
+my $NewsBaseURL = 'https://www.xsede.org/news/user-news/-/news/item/';
 # Interval to subtract for recent outages
 my $recentInterval = "INTERVAL '7 DAY'";
 
@@ -103,12 +103,27 @@ my $allOutageQuery = "SELECT i.item_id, i.subject, i.content,
 # Removed 3/2/2010 by JP Navarro
 #              s.outage_type_id = '2' AND
 
+my $allUpdateQuery = "SELECT u.item_id, u.update_id, to_char(u.update_date,'YYYYMMDD HH24:MI:SS'), u.content
+         FROM user_news.item_update u
+         WHERE u.item_id in (
+                 SELECT i.item_id FROM  user_news.item i
+                   JOIN  user_news.system_event s ON (s.item_id = i.item_id)
+                   JOIN  user_news.item_category ic ON (ic.item_id = i.item_id)
+                   JOIN  user_news.category c ON (c.category_id = ic.category_id)
+                   WHERE i.item_type = 'S' AND
+                         i.deleted IS NULL AND
+                         c.active = 't' AND
+                         s.update_id = (SELECT MAX(se.update_id) FROM user_news.system_event se WHERE se.item_id = i.item_id)
+                           )";
+#
+
+
 # Debug setting
 my $FALSE  = 0;
 my $TRUE   = 1;
 my $DEBUG  = $FALSE;
 
-# Fields value examples:
+# Outage fields value examples:
 #          '4312',
 #          'Cobalt in production 8:30PM,',
 #          'Cobalt will be unavailable from noon to 6pm on October 22 for emergency filesystem maintenance.',
@@ -116,7 +131,14 @@ my $DEBUG  = $FALSE;
 #          '2009-10-22 08.30.00 PM',
 #          'CDT',
 #          '1',
-#          'cobalt.ncsa.teragrid.org'
+#          'cobalt.ncsa.teragrid.org',
+#          'Partial'
+
+# Update fields value examples:
+#          '4312',
+#          '2',
+#          '2009-10-22 05.30.00 PM',
+#          'Returned to service early at 5pm on October 22',
 
 # Use table field indexes to make code more readable
 my $F_item_id     = 0;
@@ -142,6 +164,7 @@ my @futureOut = dbexecsql($dbh, $futureOutageQuery);
 my @recentOut = dbexecsql($dbh, $recentOutageQuery);
 my @currentOut = dbexecsql($dbh, $currentOutageQuery);
 my @allOut = dbexecsql($dbh, $allOutageQuery);
+my @allUpdate = dbexecsql($dbh, $allUpdateQuery);
 dbdisconnect($dbh);
 
 my $lock_file = "$cache_dir/.lock";
@@ -155,6 +178,7 @@ create_lock($lock_file);
 #CSVoutput('current', @currentOut);
 #XMLoutput('all', @allOut);
 CSVoutput('all', @allOut);
+CSVoutput('update', @allUpdate);
 
 delete_lock($lock_file);
 
