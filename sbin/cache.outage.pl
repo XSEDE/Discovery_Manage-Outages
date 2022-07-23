@@ -140,7 +140,7 @@ my $DEBUG  = $FALSE;
 #          '2009-10-22 05.30.00 PM',
 #          'Returned to service early at 5pm on October 22',
 
-# Use table field indexes to make code more readable
+# OUTAGE FIELDS: Use table field indexes to make code more readable
 my $F_item_id     = 0;
 my $F_subject     = 1;
 my $F_content     = 2;
@@ -151,6 +151,12 @@ my $F_update_id   = 6;
 my $F_category    = 7;
 my $F_outage_type_id = 8;
 
+# UPDATE FIELDS: Use table field indexes to make code more readable
+my $UF_item_id     = 0;
+my $UF_update_id   = 1;
+my $UF_update_date = 2;
+my $UF_content     = 3;
+
 my ($cache_dir);
 GetOptions ('cache|c=s'   => \$cache_dir);
 unless ($cache_dir) {
@@ -160,25 +166,25 @@ unless ($cache_dir) {
 
 my $dbh = dbconnect();
 my $timestamp = strftime "%Y-%m-%dT%H:%M:%SZ", gmtime;
-my @futureOut = dbexecsql($dbh, $futureOutageQuery);
-my @recentOut = dbexecsql($dbh, $recentOutageQuery);
-my @currentOut = dbexecsql($dbh, $currentOutageQuery);
-my @allOut = dbexecsql($dbh, $allOutageQuery);
+#my @futureOutage = dbexecsql($dbh, $futureOutageQuery);
+#my @recentOutage = dbexecsql($dbh, $recentOutageQuery);
+#my @currentOut = dbexecsql($dbh, $currentOutageQuery);
+my @allOutage = dbexecsql($dbh, $allOutageQuery);
 my @allUpdate = dbexecsql($dbh, $allUpdateQuery);
 dbdisconnect($dbh);
 
 my $lock_file = "$cache_dir/.lock";
 create_lock($lock_file);
 
-#XMLoutput('future', @futureOut);
-#CSVoutput('future', @futureOut);
-#XMLoutput('recent', @recentOut);
-#CSVoutput('recent', @recentOut);
-#XMLoutput('current', @currentOut);
-#CSVoutput('current', @currentOut);
-#XMLoutput('all', @allOut);
-CSVoutput('all', @allOut);
-CSVoutput('update', @allUpdate);
+#XML_outage_output('future', @futureOutage);
+#CSV_outage_output('future', @futureOutage);
+#XML_outage_output('recent', @recentOutage);
+#CSV_outage_output('recent', @recentOut);
+#XML_outage_output('current', @currentOut);
+#CSV_outage_output('current', @currentOut);
+#XML_outage_output('all', @allOutage);
+CSV_outage_output('all', @allOutage);
+CSV_update_output('all', @allUpdate);
 
 delete_lock($lock_file);
 
@@ -375,7 +381,7 @@ sub noltgt { #Convert < and > to &lt; and &gt;
 }
 
 ###############################################################################
-sub XMLoutput($@) {
+sub XML_outage_output($@) {
    my $type = shift;
    my $cache_file = "$cache_dir/$type" . "OutageReport.xml";
    open(OUT, ">$cache_file.NEW") or
@@ -384,29 +390,29 @@ sub XMLoutput($@) {
    print OUT '<?xml version="1.0" encoding="UTF-8" ?>' . "\n";
    print OUT "<V4OutageRP Timestamp=\"$timestamp\">\n";
    foreach my $entry (@_) {
-#     my @site = split(/\./,$entry->[$F_category]);
+#     my @site = split(/\./,$entry->[$OF_category]);
 #     shift @site;
     
-      my $sdate   = ParseDate($entry->[$F_start_time]);
-      my $edate   = ParseDate($entry->[$F_end_time]);
-      #my $startTS = UnixDate(Date_ConvTZ($sdate,$entry->[$F_time_zone],'UTC'), "%Y-%m-%dT%H:%M:%SZ");
-      #my $endTS   = UnixDate(Date_ConvTZ($edate,$entry->[$F_time_zone],'UTC'), "%Y-%m-%dT%H:%M:%SZ");
+      my $sdate   = ParseDate($entry->[$OF_start_time]);
+      my $edate   = ParseDate($entry->[$OF_end_time]);
+      #my $startTS = UnixDate(Date_ConvTZ($sdate,$entry->[$OF_time_zone],'UTC'), "%Y-%m-%dT%H:%M:%SZ");
+      #my $endTS   = UnixDate(Date_ConvTZ($edate,$entry->[$OF_time_zone],'UTC'), "%Y-%m-%dT%H:%M:%SZ");
       my $startTS = UnixDate($sdate, "%Y-%m-%dT%H:%M:%SZ");
       my $endTS   = UnixDate($edate, "%Y-%m-%dT%H:%M:%SZ");
 
 
       print OUT "  <Outage>\n";
-      print OUT "    <WebURL>$NewsBaseURL$entry->[$F_item_id]</WebURL>\n";
-      print OUT "    <Subject>" . noltgt($entry->[$F_subject]) . "</Subject>\n";
-      print OUT "    <Content>" . noltgt($entry->[$F_content]) . "</Content>\n";
+      print OUT "    <WebURL>$NewsBaseURL$entry->[$OF_item_id]</WebURL>\n";
+      print OUT "    <Subject>" . noltgt($entry->[$OF_subject]) . "</Subject>\n";
+      print OUT "    <Content>" . noltgt($entry->[$OF_content]) . "</Content>\n";
       print OUT "    <OutageStart>$startTS</OutageStart>\n";
       print OUT "    <OutageEnd>$endTS</OutageEnd>\n";
-#     print OUT "    <ResourceID>$entry->[$F_category]</ResourceID>\n";
-#     my @site = split(/\./,$entry->[$F_category]);
+#     print OUT "    <ResourceID>$entry->[$OF_category]</ResourceID>\n";
+#     my @site = split(/\./,$entry->[$OF_category]);
 #     shift @site;
 #     print OUT "    <SiteID>" . join('.', @site) . "</SiteID>\n";
-      print OUT "    <ResourceID>" . category_to_resourceid($entry->[$F_category]) . "</ResourceID>\n";
-      print OUT "    <SiteID>" . category_to_siteid($entry->[$F_category]) . "</SiteID>\n";
+      print OUT "    <ResourceID>" . category_to_resourceid($entry->[$OF_category]) . "</ResourceID>\n";
+      print OUT "    <SiteID>" . category_to_siteid($entry->[$OF_category]) . "</SiteID>\n";
       print OUT "  </Outage>\n";
    }
    print OUT "</V4OutageRP>\n";
@@ -419,7 +425,7 @@ sub XMLoutput($@) {
 }
 
 ###############################################################################
-sub CSVoutput($@) {
+sub CSV_outage_output($@) {
    my $type = shift;
    my $cache_file = "$cache_dir/$type" . "OutageReport.csv";
    open my $OUT, ">$cache_file.NEW" or
@@ -434,23 +440,51 @@ sub CSVoutput($@) {
 
    $csv->print ($OUT, ['OutageID', 'ResourceID', 'WebURL', 'Subject', 'Content', 'OutageStart', 'OutageEnd', 'SiteID', 'OutageType']);
    foreach my $entry (@_) {
-      my $sdate   = ParseDate($entry->[$F_start_time]);
-      my $edate   = ParseDate($entry->[$F_end_time]);
-      #my $startTS = UnixDate(Date_ConvTZ($sdate,$entry->[$F_time_zone],'UTC'), "%Y-%m-%dT%H:%M:%SZ");
-      #my $endTS   = UnixDate(Date_ConvTZ($edate,$entry->[$F_time_zone],'UTC'), "%Y-%m-%dT%H:%M:%SZ");
+      my $sdate   = ParseDate($entry->[$OF_start_time]);
+      my $edate   = ParseDate($entry->[$OF_end_time]);
+      #my $startTS = UnixDate(Date_ConvTZ($sdate,$entry->[$OF_time_zone],'UTC'), "%Y-%m-%dT%H:%M:%SZ");
+      #my $endTS   = UnixDate(Date_ConvTZ($edate,$entry->[$OF_time_zone],'UTC'), "%Y-%m-%dT%H:%M:%SZ");
       my $startTS = UnixDate($sdate, "%Y-%m-%dT%H:%M:%SZ");
       my $endTS   = UnixDate($edate, "%Y-%m-%dT%H:%M:%SZ");
-#     (my $site = $entry->[$F_category])  =~ s/^[^\.]+\.//;
-      my $outageType = $outageTypeMap{$entry->[$F_outage_type_id]};
-      my $output = [ $entry->[$F_item_id],
-                     category_to_resourceid($entry->[$F_category]),
-                     "$NewsBaseURL$entry->[$F_item_id]", 
-                     $entry->[$F_subject],
-                     $entry->[$F_content],
+#     (my $site = $entry->[$OF_category])  =~ s/^[^\.]+\.//;
+      my $outageType = $outageTypeMap{$entry->[$OF_outage_type_id]};
+      my $output = [ $entry->[$OF_item_id],
+                     category_to_resourceid($entry->[$OF_category]),
+                     "$NewsBaseURL$entry->[$OF_item_id]", 
+                     $entry->[$OF_subject],
+                     $entry->[$OF_content],
                      $startTS,
                      $endTS,
-                     category_to_siteid($entry->[$F_category]),
+                     category_to_siteid($entry->[$OF_category]),
                      $outageType
+                  ];
+
+      $csv->print ($OUT, $output );
+   }
+   close($OUT);
+   my @outstat = stat("$cache_file.NEW");
+   if ($outstat[7] != 0) {
+      system("mv $cache_file.NEW $cache_file");
+  }
+}
+
+
+###############################################################################
+sub CSV_update_output($@) {
+   my $type = shift;
+   my $cache_file = "$cache_dir/$type" . "UpdateReport.csv";
+   open my $OUT, ">$cache_file.NEW" or
+      die "Failed to open output '$cache_file'";
+
+   my $csv = Text::CSV_XS->new( { binary => 1, eol => $/ } );
+
+   $csv->print ($OUT, ['OutageID', 'UpdateID', 'UpdateDate', 'UpdateContent']);
+   foreach my $entry (@_) {
+      my $update_date = ParseDate($entry->[$UF_update_date]);
+      my $output = [ $entry->[$UF_item_id],
+                     $entry->[$UF_update_id],
+                     $update_date,
+                     $entry->[$UF_content]
                   ];
 
       $csv->print ($OUT, $output );
