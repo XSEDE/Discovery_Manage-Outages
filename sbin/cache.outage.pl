@@ -141,15 +141,15 @@ my $DEBUG  = $FALSE;
 #          'Returned to service early at 5pm on October 22',
 
 # OUTAGE FIELDS: Use table field indexes to make code more readable
-my $F_item_id     = 0;
-my $F_subject     = 1;
-my $F_content     = 2;
-my $F_start_time  = 3;
-my $F_end_time    = 4;
-my $F_time_zone   = 5;
-my $F_update_id   = 6;
-my $F_category    = 7;
-my $F_outage_type_id = 8;
+my $OF_item_id     = 0;
+my $OF_subject     = 1;
+my $OF_content     = 2;
+my $OF_start_time  = 3;
+my $OF_end_time    = 4;
+my $OF_time_zone   = 5;
+my $OF_update_id   = 6;
+my $OF_category    = 7;
+my $OF_outage_type_id = 8;
 
 # UPDATE FIELDS: Use table field indexes to make code more readable
 my $UF_item_id     = 0;
