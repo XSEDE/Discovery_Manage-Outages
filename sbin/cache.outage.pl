@@ -481,9 +481,10 @@ sub CSV_update_output($@) {
    $csv->print ($OUT, ['OutageID', 'UpdateID', 'UpdateDate', 'UpdateContent']);
    foreach my $entry (@_) {
       my $update_date = ParseDate($entry->[$UF_update_date]);
+      my $update_TS = UnixDate($update_date, "%Y-%m-%dT%H:%M:%SZ");
       my $output = [ $entry->[$UF_item_id],
                      $entry->[$UF_update_id],
-                     $update_date,
+                     $update_TS,
                      $entry->[$UF_content]
                   ];
 
