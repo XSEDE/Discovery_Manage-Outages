@@ -39,6 +39,7 @@ utc = UTC()
 
 #default_file = '/soft/warehouse-apps-1.0/Manage-Outages/var/allOutageReport.csv'
 default_file = './allOutageReport.csv'
+update_file = './allUpdateReport.csv'
 #snarfing the whole database is not the way to do it, for this anyway)
 databasestate = serializers.serialize("json", Outages.objects.all())
 #print databasestate
@@ -49,6 +50,14 @@ for obj in dbstate:
     #print obj
     dbhash[str(obj['pk'])]=obj
 #print dbhash
+updatehash = {}     # Contains all the outage updates by OutageID and sequential UpdateID
+with open(update_file, 'r') as up_file:
+    update_csv = csv.DictReader(up_file)
+    for row in update_csv:
+        if row['OutageID'] not in updatehash:
+            updatehash[row['OutageID']] = {}
+        updatehash[row['OutageID']][row['UpdateID']] = row
+    
 with open(default_file, 'r') as my_file:
     tgcdb_csv = csv.DictReader(my_file)
     #Start ProcessActivity
@@ -68,13 +77,23 @@ with open(default_file, 'r') as my_file:
         #print dbhash
         #print dbhash[row['OutageID']]
         #hash is just tracking what we've seen, we do the same thing for updates or not
-        if row['OutageID']+":"+row['ResourceID'] in dbhash.keys():
-            dbhash.pop(row['OutageID']+":"+row['ResourceID'])
+        
+        #Merge updates text into the
+        if row['OutageID'] in updatehash:
+            myupdates = updatehash[row['OutageID']]
+            for updateid in sorted(myupdates):
+                anupdate = myupdates[updateid]
+                # prepend update
+                row['Content'] = 'Update {} at {}\n\n{}\n'.format(updateid, anupdate['UpdateDate'], anupdate['UpdateContent'] + row['Content']
+
+        rowPK = row['OutageID']+":"+row['ResourceID']
+        if rowPK in dbhash.keys():
+            dbhash.pop(rowPK)
         #    print "%s found in database already" % row['OutageID']
         #else:
         objtoserialize={}
         objtoserialize["model"]="outages.Outages"
-        objtoserialize["pk"]=row['OutageID']+":"+row['ResourceID']
+        objtoserialize["pk"]=rowPK
         objtoserialize["fields"]=row
         jsonobj = json.dumps([objtoserialize])
         moduleobjects =serializers.deserialize("json", jsonobj)
