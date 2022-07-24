@@ -84,7 +84,7 @@ with open(default_file, 'r') as my_file:
             for updateid in sorted(myupdates):
                 anupdate = myupdates[updateid]
                 # prepend update
-                row['Content'] = 'Update {} at {}\n\n{}\n'.format(updateid, anupdate['UpdateDate'], anupdate['UpdateContent'] + row['Content']
+                row['Content'] = "Update {} at {}\n\n{}\n".format(updateid, anupdate['UpdateDate'], anupdate['UpdateContent'] + row['Content'])
 
         rowPK = row['OutageID']+":"+row['ResourceID']
         if rowPK in dbhash.keys():
