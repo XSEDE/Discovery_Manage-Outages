@@ -41,7 +41,7 @@ utc = UTC()
 default_file = './allOutageReport.csv'
 update_file = './allUpdateReport.csv'
 #snarfing the whole database is not the way to do it, for this anyway)
-databasestate = serializers.serialize("json", Outages.objects.all())
+databasestate = serializers.serialize("json", Outages.objects.filter(ID__endswith='.xsede.org'))
 #print databasestate
 dbstate = json.loads(databasestate)
 #print dbstate
@@ -86,11 +86,13 @@ with open(default_file, 'r') as my_file:
                 # prepend update
                 row['Content'] = "Update {} at {}\n\n{}\n".format(updateid, anupdate['UpdateDate'], anupdate['UpdateContent'] + row['Content'])
 
-        rowPK = row['OutageID']+":"+row['ResourceID']
+        rowPK = 'urn:ogf:glue2:info.xsede.org:outages:{}:{}'.format(row['OutageID'], row['ResourceID'])
         if rowPK in dbhash.keys():
             dbhash.pop(rowPK)
-        #    print "%s found in database already" % row['OutageID']
-        #else:
+
+        # Replace the XUP WebURL with an information services one that will continue working after 9/1/2022 
+        row['WebURL'] = 'https://info.xsede.org/wh1/outages/v1/outages/ID/{}/?format=html'.format(rowPK)
+
         objtoserialize={}
         objtoserialize["model"]="outages.Outages"
         objtoserialize["pk"]=rowPK
