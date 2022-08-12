@@ -41,7 +41,7 @@ utc = UTC()
 default_file = './allOutageReport.csv'
 update_file = './allUpdateReport.csv'
 #snarfing the whole database is not the way to do it, for this anyway)
-databasestate = serializers.serialize("json", Outages.objects.filter(ID__endswith='.xsede.org'))
+databasestate = serializers.serialize("json", Outages.objects.filter(ID__startswith 'urn:ogf:glue2:info.xsede.org:outages:'))
 #print databasestate
 dbstate = json.loads(databasestate)
 #print dbstate
