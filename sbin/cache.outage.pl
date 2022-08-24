@@ -12,8 +12,6 @@ use    DBD::Pg;
 use    Text::CSV_XS;
 
 my $DBUSER = 'info_services';
-#my $DBPASS = '5rtf2qaw'; 
-my $DBPASS = '8wASpHTC';
 
 # URL to see info on the web
 #my $NewsBaseURL = 'http://xsede-news.sdsc.edu/view-item.php?item=';
@@ -209,7 +207,7 @@ sub dbconnect {
 
    debug("connecting to $pg_service");
 
-   my $dbh = DBI->connect("$pg_service", "$DBUSER", "$DBPASS") ||
+   my $dbh = DBI->connect("$pg_service", "$DBUSER", undef) ||
       die "Database connect err: $DBI::errstr";
 
    dberror( "Can't connect to database: ", $DBI::errstr ) unless ($dbh);
